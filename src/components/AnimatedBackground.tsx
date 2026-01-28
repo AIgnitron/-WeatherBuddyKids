@@ -491,9 +491,6 @@ export const AnimatedBackground = memo(({ themeKey, theme }: Props) => {
 
       {themeKey === 'night' && (
         <>
-          {stars.map((st, i) => (
-            <Animated.View key={`s${st.offset}`} style={[styles.star, starStyles[i]]} />
-          ))}
           <Animated.View style={[styles.moon, moonStyle]} />
         </>
       )}

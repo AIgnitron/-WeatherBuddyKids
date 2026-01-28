@@ -4,17 +4,19 @@ import { THEMES, type AppTheme } from './theme';
 import { themeKeyFrom } from '../utils/weatherMap';
 
 export function useAppTheme(
-  forecast?: ForecastData
+  forecast?: ForecastData,
+  themeChoice?: 'auto' | WeatherThemeKey
 ): { themeKey: WeatherThemeKey; theme: AppTheme } {
   return useMemo(() => {
-    const themeKey: WeatherThemeKey = forecast
-      ? themeKeyFrom(
-          forecast.current.weatherCode,
-          forecast.current.isDay,
-          forecast.current.windKph
-        )
+    const autoKey: WeatherThemeKey = forecast
+      ? themeKeyFrom(forecast.current.weatherCode, forecast.current.isDay, forecast.current.windKph)
       : 'sunny';
 
+    const themeKey: WeatherThemeKey =
+      themeChoice && themeChoice !== 'auto'
+        ? themeChoice
+        : autoKey;
+
     return { themeKey, theme: THEMES[themeKey] };
-  }, [forecast]);
+  }, [forecast, themeChoice]);
 }

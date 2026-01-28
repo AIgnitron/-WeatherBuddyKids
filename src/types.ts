@@ -1,5 +1,7 @@
 export type WeatherThemeKey = 'sunny' | 'rain' | 'snow' | 'wind' | 'night' | 'cloud';
 
+export type TemperatureUnit = 'C' | 'F';
+
 export type City = {
   id: string; // stable key we create from lat/lon
   name: string;
@@ -20,6 +22,7 @@ export type CurrentForecast = {
   isDay: boolean;
   rainChancePctNow?: number;
   uvNow?: number;
+  snowfallCm?: number;
 };
 
 export type DailyForecast = {
@@ -32,6 +35,7 @@ export type DailyForecast = {
   windMaxKph: number;
   sunriseISO: string;
   sunsetISO: string;
+  snowfallCmSum: number;
 };
 
 export type ForecastData = {

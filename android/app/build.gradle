@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.weatherbuddykids'
+    namespace 'com.alaajallad.weatherbuddy'
     defaultConfig {
-        applicationId 'com.anonymous.weatherbuddykids'
+        applicationId 'com.alaajallad.weatherbuddy'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

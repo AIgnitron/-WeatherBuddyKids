@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import type { DailyForecast, WeatherThemeKey } from '../types';
+import type { DailyForecast, WeatherThemeKey, TemperatureUnit } from '../types';
 import type { AppTheme } from '../theme/theme';
 import { BubbleCard } from './BubbleCard';
 import { ExpandableBubble } from './ExpandableBubble';
@@ -13,9 +13,10 @@ type Props = {
   index: number;
   expanded: boolean;
   onToggle: () => void;
+  temperatureUnit: TemperatureUnit;
 };
 
-export const DayForecastCard = memo(({ theme, day, index, expanded, onToggle }: Props) => {
+export const DayForecastCard = memo(({ theme, day, index, expanded, onToggle, temperatureUnit }: Props) => {
   const dayLabel = useMemo(() => {
     if (index === 0) return 'Today';
     return formatDayLong(day.dateISO);
@@ -54,7 +55,7 @@ export const DayForecastCard = memo(({ theme, day, index, expanded, onToggle }: 
             {dayLabel}
           </Text>
           <Text style={[styles.hilo, { color: theme.textSoft }]} numberOfLines={1}>
-            High {formatTemp(day.tempMaxC)}  •  Low {formatTemp(day.tempMinC)}
+            High {formatTemp(day.tempMaxC, temperatureUnit)}  •  Low {formatTemp(day.tempMinC, temperatureUnit)}
           </Text>
         </View>
         <Text style={[styles.chev, { color: theme.text }]}>{expanded ? '▲' : '▼'}</Text>

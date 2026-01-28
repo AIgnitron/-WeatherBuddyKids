@@ -11,21 +11,8 @@ import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { GadgetsGrid } from '../components/GadgetsGrid';
 import { DressTipCard } from '../components/DressTipCard';
-import { formatKph, formatPct, formatTemp, formatTime } from '../utils/format';
+import { formatKph, formatPct, formatTemp, formatTime, formatSnowfall } from '../utils/format';
 import { getDressTip } from '../utils/dressTip';
-
-function HeaderActionButton({ theme, emoji, onPress, label }: { theme: any; emoji: string; onPress: () => void; label: string }) {
-  return (
-    <BubbleCard
-      theme={theme}
-      onPress={onPress}
-      accessibilityLabel={label}
-      style={[styles.actionBtn, { backgroundColor: theme.card, borderColor: theme.outline }]}
-    >
-      <Text style={styles.actionEmoji}>{emoji}</Text>
-    </BubbleCard>
-  );
-}
 
 export function TodayScreen() {
   const forecast = useWeatherStore((s) => s.forecast);
@@ -40,10 +27,12 @@ export function TodayScreen() {
   const addFavorite = useWeatherStore((s) => s.addFavorite);
   const removeFavorite = useWeatherStore((s) => s.removeFavorite);
   const refresh = useWeatherStore((s) => s.refresh);
-  const useMyLocation = useWeatherStore((s) => s.useMyLocation);
   const setKidMode = useWeatherStore((s) => s.setKidMode);
+  const themeChoice = useWeatherStore((s) => s.themeChoice);
+  const temperatureUnit = useWeatherStore((s) => s.temperatureUnit);
+  const setTemperatureUnit = useWeatherStore((s) => s.setTemperatureUnit);
 
-  const { themeKey, theme } = useAppTheme(forecast);
+  const { themeKey, theme } = useAppTheme(forecast, themeChoice);
 
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -61,45 +50,49 @@ export function TodayScreen() {
     const sunrise = today.sunriseISO ? formatTime(today.sunriseISO) : '--';
     const sunset = today.sunsetISO ? formatTime(today.sunsetISO) : '--';
 
+    // Snow: use current snowfall or daily sum
+    const snowNow = typeof forecast.current.snowfallCm === 'number' && forecast.current.snowfallCm > 0
+      ? forecast.current.snowfallCm
+      : today.snowfallCmSum;
+
     const all = [
-      { key: 'temp', emoji: '🌡️', label: 'Temp', value: formatTemp(forecast.current.temperatureC) },
-      { key: 'feels', emoji: '🙂', label: 'Feels', value: formatTemp(forecast.current.feelsLikeC) },
+      { key: 'temp', emoji: '🌡️', label: 'Temp', value: formatTemp(forecast.current.temperatureC, temperatureUnit) },
+      { key: 'feels', emoji: '🙂', label: 'Feels', value: formatTemp(forecast.current.feelsLikeC, temperatureUnit) },
       { key: 'wind', emoji: '💨', label: 'Wind', value: formatKph(forecast.current.windKph) },
       { key: 'rain', emoji: '🌧️', label: 'Rain', value: formatPct(rainNow) },
       { key: 'uv', emoji: '🧴', label: 'UV', value: typeof uvNow === 'number' ? String(Math.round(uvNow)) : '--' },
       { key: 'hum', emoji: '💧', label: 'Humid', value: formatPct(forecast.current.humidityPct) },
-      { key: 'sun', emoji: '🌞', label: 'Sun', value: `${sunrise}`, sub: `down ${sunset}` },
-      { key: 'hi', emoji: '📈', label: 'High', value: formatTemp(today.tempMaxC), sub: `low ${formatTemp(today.tempMinC)}` }
+      { key: 'snow', emoji: '❄️', label: 'Snow', value: formatSnowfall(snowNow), sub: snowNow > 0 ? 'today' : undefined },
+      // Sun and High both have 'sub' text, placing them together ensures same row height
+      { key: 'sun', emoji: '🌞', label: 'Sunrise', value: `${sunrise}`, sub: `sunset ${sunset}` },
+      { key: 'hi', emoji: '📈', label: 'High', value: formatTemp(today.tempMaxC, temperatureUnit), sub: `low ${formatTemp(today.tempMinC, temperatureUnit)}` }
     ];
 
     if (kidMode) {
-      return all.filter((g) => ['temp', 'rain', 'wind'].includes(g.key));
+      // Show snow gadget in kid mode if there's snow, otherwise skip it
+      const kidKeys = snowNow > 0 ? ['temp', 'rain', 'wind', 'snow'] : ['temp', 'rain', 'wind'];
+      return all.filter((g) => kidKeys.includes(g.key));
     }
 
     return all;
-  }, [forecast, today, kidMode]);
+  }, [forecast, today, kidMode, temperatureUnit]);
 
   const dressTip = useMemo(() => {
-    if (!forecast) return 'Bring a smile 😊';
-    return getDressTip(forecast.current, today).text;
+    if (!forecast) return { short: 'Smile', text: 'Bring a smile 😊', emoji: '😊', extras: [], details: [], outfit: '😊' };
+    return getDressTip(forecast.current, today);
   }, [forecast, today]);
 
   const header = (
     <View>
       <View style={styles.headerRow}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.titleContainer}>
           <Text style={[styles.city, { color: theme.text }]} numberOfLines={1} accessibilityLabel={`City ${selectedCity.name}`}>
             {selectedCity.name}
           </Text>
-          <Text style={[styles.sub, { color: theme.textSoft }]} numberOfLines={1}>
+          <Text style={[styles.sub, { color: theme.textSoft }]} numberOfLines={1} ellipsizeMode="tail">
             {selectedCity.admin1 ? `${selectedCity.admin1}, ` : ''}{selectedCity.country}
-            {status === 'cached' ? '  •  saved' : status === 'ready' ? '  •  live' : ''}
           </Text>
         </View>
-
-        <HeaderActionButton theme={theme} emoji="🔄" label="Refresh" onPress={() => refresh().catch(() => {})} />
-        <HeaderActionButton theme={theme} emoji="📍" label="Use my location" onPress={() => useMyLocation().catch(() => {})} />
-        <HeaderActionButton theme={theme} emoji="🔎" label="Search city" onPress={() => setSearchOpen(true)} />
       </View>
 
       <FavoritesRow
@@ -125,6 +118,21 @@ export function TodayScreen() {
         />
       </View>
 
+      <View style={styles.kidRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.kidTitle, { color: theme.text }]}>Temperature</Text>
+          <Text style={[styles.kidSub, { color: theme.textSoft }]}>{temperatureUnit === 'C' ? 'Celsius' : 'Fahrenheit'}</Text>
+        </View>
+        <TogglePill
+          theme={theme}
+          value={temperatureUnit === 'F'}
+          onChange={(v) => setTemperatureUnit(v ? 'F' : 'C').catch(() => {})}
+          labelOn="°F"
+          labelOff="°C"
+          accessibilityLabel="Temperature unit toggle"
+        />
+      </View>
+
       {lastError?.message ? (
         <Text style={[styles.banner, { color: theme.text }]} accessibilityLabel={lastError.message}>
           ⚠️ {lastError.message}
@@ -141,10 +149,7 @@ export function TodayScreen() {
           visible={searchOpen}
           theme={theme}
           onClose={() => setSearchOpen(false)}
-          onPick={async (c) => {
-            await addFavorite(c);
-            await selectCity(c);
-          }}
+          onPick={(c) => { addFavorite(c).catch(() => {}); }}
         />
       </ScreenShell>
     );
@@ -163,16 +168,16 @@ export function TodayScreen() {
           visible={searchOpen}
           theme={theme}
           onClose={() => setSearchOpen(false)}
-          onPick={async (c) => {
-            await addFavorite(c);
-            await selectCity(c);
-          }}
+          onPick={(c) => { addFavorite(c).catch(() => {}); }}
         />
       </ScreenShell>
     );
   }
 
-  const currentTemp = forecast ? formatTemp(forecast.current.temperatureC) : '--';
+  const currentTemp = forecast ? formatTemp(forecast.current.temperatureC, temperatureUnit) : '--';
+  const feelsLikeTemp = forecast?.current.feelsLikeC != null
+    ? formatTemp(forecast.current.feelsLikeC, temperatureUnit)
+    : null;
 
   return (
     <ScreenShell themeKey={themeKey} theme={theme} header={header}>
@@ -184,6 +189,11 @@ export function TodayScreen() {
         <Text style={styles.heroEmoji}>🌈</Text>
         <Text style={[styles.heroTemp, { color: theme.text }]}>{currentTemp}</Text>
         <Text style={[styles.heroLabel, { color: theme.textSoft }]}>{kidMode ? 'Right now' : 'Right now outside'}</Text>
+        {feelsLikeTemp && (
+          <Text style={[styles.feelsLike, { color: theme.textSoft }]}>
+            Feels {feelsLikeTemp}
+          </Text>
+        )}
       </BubbleCard>
 
       <Text style={[styles.sectionTitle, { color: theme.text }]} accessibilityLabel="Today's gadgets">
@@ -199,10 +209,7 @@ export function TodayScreen() {
         visible={searchOpen}
         theme={theme}
         onClose={() => setSearchOpen(false)}
-        onPick={async (c) => {
-          await addFavorite(c);
-          await selectCity(c);
-        }}
+        onPick={(c) => { addFavorite(c).catch(() => {}); }}
       />
     </ScreenShell>
   );
@@ -212,26 +219,20 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10
+    justifyContent: 'center'
+  },
+  titleContainer: {
+    alignItems: 'center'
   },
   city: {
     fontSize: 30,
-    fontWeight: '900'
+    fontWeight: '900',
+    textAlign: 'center'
   },
   sub: {
     fontSize: 13,
-    fontWeight: '800'
-  },
-  actionBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 0
-  },
-  actionEmoji: {
-    fontSize: 22
+    fontWeight: '800',
+    textAlign: 'center'
   },
   kidRow: {
     marginTop: 10,
@@ -269,6 +270,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 16,
     fontWeight: '800'
+  },
+  feelsLike: {
+    marginTop: 6,
+    fontSize: 15,
+    fontWeight: '700'
   },
   sectionTitle: {
     marginTop: 16,

@@ -2,18 +2,34 @@ import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import type { AppTheme } from '../theme/theme';
-import { tapHaptic } from '../utils/haptics';
+import { toggleHaptic } from '../utils/haptics';
+import { playToggleSound } from '../utils/sounds';
+
+const TRACK_WIDTH = 56;
+const TRACK_HEIGHT = 32;
+const KNOB_SIZE = 24;
+const KNOB_MARGIN = 4;
+const KNOB_TRAVEL = TRACK_WIDTH - KNOB_SIZE - KNOB_MARGIN * 2;
 
 type Props = {
   theme: AppTheme;
-  labelOn: string;
-  labelOff: string;
+  labelOn?: string;
+  labelOff?: string;
   value: boolean;
   onChange: (next: boolean) => void;
   accessibilityLabel?: string;
+  showLabels?: boolean;
 };
 
-export const TogglePill = memo(({ theme, labelOn, labelOff, value, onChange, accessibilityLabel }: Props) => {
+export const TogglePill = memo(({
+  theme,
+  labelOn = 'ON',
+  labelOff = 'OFF',
+  value,
+  onChange,
+  accessibilityLabel,
+  showLabels = true
+}: Props) => {
   const t = useSharedValue(value ? 1 : 0);
 
   React.useEffect(() => {
@@ -29,52 +45,88 @@ export const TogglePill = memo(({ theme, labelOn, labelOff, value, onChange, acc
   });
 
   const knobStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: 44 * t.value }]
+    transform: [{ translateX: KNOB_TRAVEL * t.value }]
   }));
+
+  const handlePress = async () => {
+    await toggleHaptic();
+    playToggleSound();
+    onChange(!value);
+  };
 
   return (
     <Pressable
-      onPress={async () => {
-        await tapHaptic();
-        onChange(!value);
-      }}
+      onPress={handlePress}
       accessibilityRole="switch"
       accessibilityState={{ checked: value }}
-      accessibilityLabel={accessibilityLabel ?? 'Kid mode toggle'}
-      hitSlop={12}
+      accessibilityLabel={accessibilityLabel ?? 'Toggle'}
+      hitSlop={8}
     >
-      <Animated.View style={[styles.track, trackStyle]}>
-        <Animated.View style={[styles.knob, knobStyle, { backgroundColor: theme.card }]} />
-        <View style={styles.labels}>
-          <Text style={[styles.label, { color: value ? '#fff' : theme.text }]}>{value ? labelOn : labelOff}</Text>
-        </View>
-      </Animated.View>
+      <View style={styles.row}>
+        {showLabels && (
+          <Text
+            style={[
+              styles.label,
+              { color: !value ? theme.text : theme.textSoft },
+              !value && styles.labelActive
+            ]}
+          >
+            {labelOff}
+          </Text>
+        )}
+
+        <Animated.View style={[styles.track, trackStyle]}>
+          <Animated.View style={[styles.knob, knobStyle, { backgroundColor: theme.card }]} />
+        </Animated.View>
+
+        {showLabels && (
+          <Text
+            style={[
+              styles.label,
+              { color: value ? theme.text : theme.textSoft },
+              value && styles.labelActive
+            ]}
+          >
+            {labelOn}
+          </Text>
+        )}
+      </View>
     </Pressable>
   );
 });
 
 const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
   track: {
-    height: 44,
-    width: 110,
+    position: 'relative',
+    height: TRACK_HEIGHT,
+    width: TRACK_WIDTH,
     borderRadius: 999,
     borderWidth: 2,
-    justifyContent: 'center',
-    paddingHorizontal: 6
+    justifyContent: 'center'
   },
   knob: {
     position: 'absolute',
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    left: 5
-  },
-  labels: {
-    alignItems: 'center',
-    justifyContent: 'center'
+    width: KNOB_SIZE,
+    height: KNOB_SIZE,
+    borderRadius: KNOB_SIZE / 2,
+    left: KNOB_MARGIN,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '600',
+    minWidth: 24
+  },
+  labelActive: {
     fontWeight: '900'
   }
 });

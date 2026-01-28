@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useWeatherStore } from '../store/useWeatherStore';
 import { useAppTheme } from '../theme/useAppTheme';
@@ -25,19 +25,6 @@ function pickPhrase(themeKey: string) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function HeaderActionButton({ theme, emoji, onPress, label }: { theme: any; emoji: string; onPress: () => void; label: string }) {
-  return (
-    <BubbleCard
-      theme={theme}
-      onPress={onPress}
-      accessibilityLabel={label}
-      style={[styles.actionBtn, { backgroundColor: theme.card, borderColor: theme.outline }]}
-    >
-      <Text style={styles.actionEmoji}>{emoji}</Text>
-    </BubbleCard>
-  );
-}
-
 export function BuddyScreen() {
   const forecast = useWeatherStore((s) => s.forecast);
   const status = useWeatherStore((s) => s.status);
@@ -52,7 +39,8 @@ export function BuddyScreen() {
   const refresh = useWeatherStore((s) => s.refresh);
   const useMyLocation = useWeatherStore((s) => s.useMyLocation);
 
-  const { themeKey, theme } = useAppTheme(forecast);
+  const themeChoice = useWeatherStore((s) => s.themeChoice);
+  const { themeKey, theme } = useAppTheme(forecast, themeChoice);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [phrase, setPhrase] = useState<string>(() => pickPhrase(themeKey));
@@ -73,9 +61,6 @@ export function BuddyScreen() {
             {selectedCity.name}{selectedCity.admin1 ? `, ${selectedCity.admin1}` : ''}
           </Text>
         </View>
-        <HeaderActionButton theme={theme} emoji="🔄" label="Refresh" onPress={() => refresh().catch(() => {})} />
-        <HeaderActionButton theme={theme} emoji="📍" label="Use my location" onPress={() => useMyLocation().catch(() => {})} />
-        <HeaderActionButton theme={theme} emoji="🔎" label="Search city" onPress={() => setSearchOpen(true)} />
       </View>
 
       <FavoritesRow
@@ -102,10 +87,7 @@ export function BuddyScreen() {
           visible={searchOpen}
           theme={theme}
           onClose={() => setSearchOpen(false)}
-          onPick={async (c) => {
-            await addFavorite(c);
-            await selectCity(c);
-          }}
+          onPick={(c) => { addFavorite(c).catch(() => {}); }}
         />
       </ScreenShell>
     );
@@ -124,10 +106,7 @@ export function BuddyScreen() {
           visible={searchOpen}
           theme={theme}
           onClose={() => setSearchOpen(false)}
-          onPick={async (c) => {
-            await addFavorite(c);
-            await selectCity(c);
-          }}
+          onPick={(c) => { addFavorite(c).catch(() => {}); }}
         />
       </ScreenShell>
     );
@@ -177,10 +156,7 @@ export function BuddyScreen() {
         visible={searchOpen}
         theme={theme}
         onClose={() => setSearchOpen(false)}
-        onPick={async (c) => {
-          await addFavorite(c);
-          await selectCity(c);
-        }}
+        onPick={(c) => { addFavorite(c).catch(() => {}); }}
       />
     </ScreenShell>
   );
@@ -199,17 +175,6 @@ const styles = StyleSheet.create({
   sub: {
     fontSize: 13,
     fontWeight: '800'
-  },
-  actionBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 0
-  },
-  actionEmoji: {
-    fontSize: 22
   },
   banner: {
     marginTop: 10,

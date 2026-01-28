@@ -1,8 +1,24 @@
+import type { TemperatureUnit } from '../types';
+
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 export const round0 = (n: number) => Math.round(n);
 
-export const formatTemp = (c: number) => `${round0(c)}°`;
+export const celsiusToFahrenheit = (c: number) => (c * 9) / 5 + 32;
+
+export const formatTemp = (c: number, unit: TemperatureUnit = 'C') => {
+  if (unit === 'F') {
+    return `${round0(celsiusToFahrenheit(c))}°`;
+  }
+  return `${round0(c)}°`;
+};
+
+export const formatSnowfall = (cm: number | undefined) => {
+  if (typeof cm !== 'number') return '--';
+  if (cm <= 0) return '0 cm';
+  if (cm < 1) return `${round0(cm * 10)} mm`;
+  return `${cm.toFixed(1)} cm`;
+};
 
 export const formatPct = (p: number | undefined) => (typeof p === 'number' ? `${round0(p)}%` : '--');
 

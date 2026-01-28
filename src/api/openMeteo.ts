@@ -40,9 +40,9 @@ type ForecastArgs = {
 
 export async function fetchForecast({ city }: ForecastArgs): Promise<ForecastData> {
   const url = `${FORECAST_BASE}?latitude=${city.latitude}&longitude=${city.longitude}`
-    + `&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m`
-    + `&hourly=precipitation_probability,uv_index`
-    + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,sunrise,sunset,wind_speed_10m_max`
+    + `&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m,snowfall`
+    + `&hourly=precipitation_probability,uv_index,snowfall`
+    + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,sunrise,sunset,wind_speed_10m_max,snowfall_sum`
     + `&timezone=auto`;
 
   const res = await fetch(url);
@@ -77,6 +77,13 @@ export async function fetchForecast({ city }: ForecastArgs): Promise<ForecastDat
     return Number.isFinite(v) ? v : undefined;
   })();
 
+  const snowfallNow = (() => {
+    const arr: any[] = Array.isArray(hourly?.snowfall) ? hourly.snowfall : [];
+    if (nearestIndex < 0 || nearestIndex >= arr.length) return undefined;
+    const v = Number(arr[nearestIndex]);
+    return Number.isFinite(v) ? v : undefined;
+  })();
+
   const dailyList = (() => {
     const dates: string[] = Array.isArray(daily?.time) ? daily.time : [];
     const codes: any[] = Array.isArray(daily?.weather_code) ? daily.weather_code : [];
@@ -87,6 +94,7 @@ export async function fetchForecast({ city }: ForecastArgs): Promise<ForecastDat
     const sunrise: any[] = Array.isArray(daily?.sunrise) ? daily.sunrise : [];
     const sunset: any[] = Array.isArray(daily?.sunset) ? daily.sunset : [];
     const wind: any[] = Array.isArray(daily?.wind_speed_10m_max) ? daily.wind_speed_10m_max : [];
+    const snowSum: any[] = Array.isArray(daily?.snowfall_sum) ? daily.snowfall_sum : [];
 
     return dates.map((d, i) => ({
       dateISO: String(d),
@@ -97,7 +105,8 @@ export async function fetchForecast({ city }: ForecastArgs): Promise<ForecastDat
       uvMax: Number(uv[i] ?? 0),
       windMaxKph: Number(wind[i] ?? 0),
       sunriseISO: String(sunrise[i] ?? ''),
-      sunsetISO: String(sunset[i] ?? '')
+      sunsetISO: String(sunset[i] ?? ''),
+      snowfallCmSum: Number(snowSum[i] ?? 0)
     }));
   })();
 
@@ -113,7 +122,8 @@ export async function fetchForecast({ city }: ForecastArgs): Promise<ForecastDat
       weatherCode: Number(current?.weather_code ?? 0),
       isDay: Boolean(current?.is_day),
       rainChancePctNow: rainNow,
-      uvNow
+      uvNow,
+      snowfallCm: snowfallNow
     },
     daily: dailyList
   };

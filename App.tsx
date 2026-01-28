@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Tabs } from './src/navigation/Tabs';
 import { useWeatherStore } from './src/store/useWeatherStore';
 import { LoadingState } from './src/components/LoadingState';
+import { preloadSounds } from './src/utils/sounds';
 
 export default function App() {
   const inited = useWeatherStore((s) => s.inited);
@@ -16,6 +17,8 @@ export default function App() {
     init().catch(() => {
       // store handles errors
     });
+    // Preload sounds in background
+    preloadSounds().catch(() => {});
   }, [init]);
 
   if (!inited) {

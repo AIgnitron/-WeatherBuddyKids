@@ -1,13 +1,30 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { City, ForecastData } from '../types';
+import type { City, ForecastData, WeatherThemeKey, TemperatureUnit } from '../types';
 
 const PREFS_KEY = 'wbk_prefs_v1';
 const cacheKey = (cityId: string) => `wbk_forecast_${cityId}`;
+
+export type AlertRule = {
+  id: 'rain' | 'wind' | 'cold' | 'heat' | 'uv';
+  enabled: boolean;
+  // thresholds are kid-friendly and coarse
+  threshold: number;
+};
 
 export type StoredPrefs = {
   selectedCity: City;
   favorites: City[];
   kidMode: boolean;
+  themeChoice?: 'auto' | WeatherThemeKey;
+  temperatureUnit?: TemperatureUnit;
+  notificationsEnabled?: boolean;
+  notificationSound?: boolean;
+  alertRules?: AlertRule[];
+  lastAlertFiredAtById?: Record<string, number>;
+  dailyReminderEnabled?: boolean;
+  dailyReminderHour?: number;
+  dailyReminderMinute?: number;
+  dailyReminderId?: string | null;
 };
 
 export const safeJsonParse = <T>(raw: string | null): T | null => {

@@ -3,9 +3,11 @@
     "name": "Weather Buddy Kids",
     "slug": "weather-buddy-kids",
     "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "primaryColor": "#4A90D9",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -14,10 +16,29 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "owner": "alaayaj",
     "ios": {
       "supportsTablet": true,
+      "buildNumber": "1",
+      "bundleIdentifier": "com.alaajallad.weatherbuddy",
+      "appStoreUrl": "https://apps.apple.com/app/weather-buddy-kids-weather/id000000000",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Weather Buddy uses your location to show weather where you are."
+        "NSLocationWhenInUseUsageDescription": "Weather Buddy uses your location to show accurate weather for where you are right now.",
+        "CFBundleDevelopmentRegion": "en",
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["fetch", "remote-notification"],
+        "LSApplicationQueriesSchemes": ["itms-apps"]
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ]
       }
     },
     "android": {
@@ -27,16 +48,25 @@
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.INTERNET",
+        "android.permission.VIBRATE"
       ],
-      "package": "com.mohibr.weatherbuddykids",
-      "versionCode": 1
+      "package": "com.alaajallad.weatherbuddy",
+      "versionCode": 1,
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.alaajallad.weatherbuddy"
     },
     "plugins": [
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Weather Buddy to use your location."
+          "locationAlwaysAndWhenInUsePermission": "Allow Weather Buddy to use your location to show local weather."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": []
         }
       ]
     ],
@@ -44,6 +74,9 @@
       "eas": {
         "projectId": "aa2db99a-9206-4706-865d-1d573e416aa1"
       }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
     }
   }
 }

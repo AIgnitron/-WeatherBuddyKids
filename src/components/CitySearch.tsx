@@ -1,10 +1,21 @@
-import React, { memo, useEffect, useMemo } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import type { AppTheme } from '../theme/theme';
 import { useWeatherStore } from '../store/useWeatherStore';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { BubbleCard } from './BubbleCard';
-import { BigCartoonButton } from './BigCartoonButton';
 import { cityEmoji } from '../utils/emoji';
 import type { City } from '../types';
 
@@ -15,14 +26,31 @@ type Props = {
   onPick?: (city: City) => void;
 };
 
+// Tab bar height for bottom padding calculation
+const TAB_BAR_HEIGHT = 64;
+
 export const CitySearch = memo(({ visible, theme, onClose, onPick }: Props) => {
-  const q = useWeatherStore((s) => s.searchQuery);
-  const setQ = useWeatherStore((s) => s.setSearchQuery);
+  const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState('');
+  const setStoreQuery = useWeatherStore((s) => s.setSearchQuery);
   const run = useWeatherStore((s) => s.runCitySearch);
   const results = useWeatherStore((s) => s.searchResults);
   const status = useWeatherStore((s) => s.searchStatus);
 
-  const dq = useDebouncedValue(q, 260);
+  const dq = useDebouncedValue(query, 260);
+
+  // Clear query and results when modal opens
+  useEffect(() => {
+    if (visible) {
+      setQuery('');
+      setStoreQuery('');
+    }
+  }, [visible, setStoreQuery]);
+
+  // Sync local query to store for search
+  useEffect(() => {
+    setStoreQuery(dq);
+  }, [dq, setStoreQuery]);
 
   useEffect(() => {
     if (!visible) return;
@@ -37,81 +65,106 @@ export const CitySearch = memo(({ visible, theme, onClose, onPick }: Props) => {
     return status === 'ready' && results.length === 0;
   }, [visible, dq, status, results.length]);
 
+  const handlePick = useCallback(
+    (city: City) => {
+      onPick?.(city);
+      onClose();
+    },
+    [onPick, onClose]
+  );
+
+  const renderItem = useCallback(
+    ({ item: c }: { item: City }) => (
+      <BubbleCard
+        key={c.id}
+        theme={theme}
+        onPress={() => handlePick(c)}
+        style={[styles.result, { backgroundColor: theme.card, borderColor: theme.outline }]}
+        accessibilityLabel={`Pick city ${c.name}`}
+      >
+        <View style={styles.resultRow}>
+          <Text style={styles.resultEmoji}>{cityEmoji(c.name)}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.resultName, { color: theme.text }]} numberOfLines={1}>
+              {c.name}
+            </Text>
+            <Text style={[styles.resultSub, { color: theme.textSoft }]} numberOfLines={1}>
+              {(c.admin1 ? `${c.admin1}, ` : '') + c.country}
+            </Text>
+          </View>
+          <Text style={styles.go}>👉</Text>
+        </View>
+      </BubbleCard>
+    ),
+    [theme, handlePick]
+  );
+
+  const keyExtractor = useCallback((item: City) => item.id, []);
+
+  // Bottom padding: safe area + tab bar height to ensure last item is visible
+  const bottomPadding = insets.bottom + TAB_BAR_HEIGHT + 20;
+
+  const ListHeader = useMemo(() => {
+    if (status === 'loading') {
+      return <Text style={[styles.helper, { color: theme.textSoft }]}>Looking for cities…</Text>;
+    }
+    if (showEmpty) {
+      return <Text style={[styles.helper, { color: theme.textSoft }]}>I can't find that city. Try another!</Text>;
+    }
+    return null;
+  }, [status, showEmpty, theme.textSoft]);
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}>
       <View style={[styles.root, { backgroundColor: theme.bgBottom }]}>
-        <View style={styles.topRow}>
-          <Text style={[styles.title, { color: theme.text }]}>Search city</Text>
-          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close search" hitSlop={12}>
-            <Text style={[styles.close, { color: theme.text }]}>✖️</Text>
-          </Pressable>
-        </View>
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          {/* Header - stays fixed at top with safe area padding */}
+          <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+            <View style={styles.topRow}>
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+                style={[styles.backButton, { backgroundColor: theme.cardAlt, borderColor: theme.outline }]}
+              >
+                <Ionicons name="chevron-back" size={26} color={theme.text} />
+              </Pressable>
+              <Text style={[styles.title, { color: theme.text }]}>Search city</Text>
+              <View style={styles.spacer} />
+            </View>
 
-        <View style={[styles.inputWrap, { borderColor: theme.outline, backgroundColor: theme.cardAlt }]}> 
-          <Text style={styles.searchIcon}>🔎</Text>
-          <TextInput
-            value={q}
-            onChangeText={setQ}
-            placeholder="Ottawa..."
-            placeholderTextColor={theme.textSoft}
-            style={[styles.input, { color: theme.text }]}
-            autoCapitalize="words"
-            autoCorrect={false}
-            returnKeyType="search"
-            accessibilityLabel="City search input"
+            <View style={[styles.inputWrap, { borderColor: theme.outline, backgroundColor: theme.cardAlt }]}>
+              <Text style={styles.searchIcon}>🔎</Text>
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Type a city…"
+                placeholderTextColor={theme.textSoft}
+                style={[styles.input, { color: theme.text }]}
+                autoCapitalize="words"
+                autoCorrect={false}
+                returnKeyType="search"
+                accessibilityLabel="City search input"
+              />
+            </View>
+          </View>
+
+          {/* Scrollable results list */}
+          <FlatList
+            data={results}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            style={styles.list}
+            contentContainerStyle={[styles.listContent, { paddingBottom: bottomPadding }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={ListHeader}
           />
-        </View>
-
-        <View style={styles.list}>
-          {status === 'loading' && (
-            <Text style={[styles.helper, { color: theme.textSoft }]}>Looking for cities…</Text>
-          )}
-
-          {showEmpty && (
-            <Text style={[styles.helper, { color: theme.textSoft }]}>I can’t find that city. Try another!</Text>
-          )}
-
-          {results.map((c) => (
-            <BubbleCard
-              key={c.id}
-              theme={theme}
-              onPress={() => {
-                onPick?.(c);
-                onClose();
-              }}
-              style={[styles.result, { backgroundColor: theme.card, borderColor: theme.outline }]}
-              accessibilityLabel={`Pick city ${c.name}`}
-            >
-              <View style={styles.resultRow}>
-                <Text style={styles.resultEmoji}>{cityEmoji(c.name)}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.resultName, { color: theme.text }]} numberOfLines={1}>
-                    {c.name}
-                  </Text>
-                  <Text style={[styles.resultSub, { color: theme.textSoft }]} numberOfLines={1}>
-                    {(c.admin1 ? `${c.admin1}, ` : '') + c.country}
-                  </Text>
-                </View>
-                <Text style={styles.go}>👉</Text>
-              </View>
-            </BubbleCard>
-          ))}
-        </View>
-
-        <View style={styles.bottom}>
-          <BigCartoonButton
-            theme={theme}
-            emoji="🏠"
-            label="Ottawa"
-            onPress={() => {
-              const store = useWeatherStore.getState();
-              const fav = store.favorites.find((x) => x.name.toLowerCase() === 'ottawa');
-              if (fav) onPick?.(fav);
-              onClose();
-            }}
-            accessibilityLabel="Pick Ottawa"
-          />
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -119,8 +172,12 @@ export const CitySearch = memo(({ visible, theme, onClose, onPick }: Props) => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
-    paddingTop: 14,
+    flex: 1
+  },
+  keyboardView: {
+    flex: 1
+  },
+  header: {
     paddingHorizontal: 16
   },
   topRow: {
@@ -128,12 +185,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between'
   },
+  backButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  spacer: {
+    width: 48,
+    height: 48
+  },
   title: {
     fontSize: 28,
-    fontWeight: '900'
-  },
-  close: {
-    fontSize: 24,
     fontWeight: '900'
   },
   inputWrap: {
@@ -155,14 +220,18 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   },
   list: {
-    marginTop: 14,
-    flex: 1
+    flex: 1,
+    marginTop: 14
+  },
+  listContent: {
+    paddingHorizontal: 16
   },
   helper: {
     fontSize: 18,
     fontWeight: '800',
     textAlign: 'center',
-    marginTop: 20
+    marginTop: 20,
+    marginBottom: 10
   },
   result: {
     marginBottom: 12,
@@ -187,8 +256,5 @@ const styles = StyleSheet.create({
   go: {
     fontSize: 20,
     marginLeft: 8
-  },
-  bottom: {
-    paddingVertical: 14
   }
 });

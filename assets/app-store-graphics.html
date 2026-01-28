@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Buddy - App Store Graphics Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        /* App Icon */
+        .icon-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .app-icon {
+            width: 256px;
+            height: 256px;
+            border-radius: 56px;
+            background: linear-gradient(145deg, #4A90D9 0%, #5BA8F7 50%, #7BC8FF 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 30px rgba(74, 144, 217, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 50%);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .app-icon .sun {
+            font-size: 80px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .app-icon .cloud {
+            font-size: 50px;
+            margin-top: -15px;
+        }
+        
+        .app-icon .title {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .icon-1024 {
+            width: 200px;
+            height: 200px;
+            border-radius: 44px;
+        }
+        
+        .icon-1024 .sun { font-size: 60px; }
+        .icon-1024 .cloud { font-size: 40px; }
+        .icon-1024 .title { font-size: 14px; }
+        
+        .icon-info {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Screenshots */
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .phone-frame {
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .phone-screen {
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F4FF 100%);
+            border-radius: 30px;
+            aspect-ratio: 9/19.5;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .screen-content {
+            padding: 50px 15px 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Screen 1: Main Weather */
+        .weather-main .location {
+            text-align: center;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .weather-main .temp {
+            text-align: center;
+            font-size: 64px;
+            font-weight: 200;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        .weather-main .condition {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .weather-main .emoji {
+            font-size: 80px;
+            text-align: center;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Screen 2: Dress Tips */
+        .dress-screen { background: linear-gradient(180deg, #FFE4B5 0%, #FFF8DC 100%); }
+        
+        .dress-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .dress-card .outfit {
+            font-size: 50px;
+            margin: 15px 0;
+        }
+        
+        .dress-card .tip {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* Screen 3: Gadgets */
+        .gadgets-screen { background: linear-gradient(180deg, #E8F5E9 0%, #F1F8E9 100%); }
+        
+        .gadgets-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .gadget {
+            background: white;
+            border-radius: 15px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .gadget .icon { font-size: 24px; }
+        .gadget .value { font-size: 18px; font-weight: 600; color: #333; }
+        .gadget .label { font-size: 10px; color: #888; }
+        
+        /* Screen 4: Week Forecast */
+        .week-screen { background: linear-gradient(180deg, #E3F2FD 0%, #BBDEFB 100%); }
+        
+        .day-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin: 5px 0;
+        }
+        
+        .day-row .day { font-weight: 600; color: #333; font-size: 13px; }
+        .day-row .weather-icon { font-size: 20px; }
+        .day-row .temps { font-size: 13px; color: #666; }
+        
+        /* Screen 5: Kid Mode */
+        .kid-screen { background: linear-gradient(180deg, #FCE4EC 0%, #F8BBD9 100%); }
+        
+        .kid-mode-badge {
+            background: #FF6B9D;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .big-emoji {
+            font-size: 100px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .simple-info {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Screen 6: Alerts */
+        .alerts-screen { background: linear-gradient(180deg, #FFF3E0 0%, #FFE0B2 100%); }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .alert-item .icon { font-size: 30px; margin-right: 12px; }
+        .alert-item .text { flex: 1; }
+        .alert-item .title { font-weight: 600; font-size: 13px; color: #333; }
+        .alert-item .desc { font-size: 11px; color: #888; }
+        .alert-item .toggle {
+            width: 45px;
+            height: 26px;
+            background: #4CAF50;
+            border-radius: 13px;
+            position: relative;
+        }
+        .alert-item .toggle::after {
+            content: '';
+            position: absolute;
+            right: 3px;
+            top: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        .screenshot-label {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Download Instructions */
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .instructions code {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .note strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌈 Weather Buddy - App Store Graphics</h1>
+        <p class="subtitle">Graphics templates for iOS App Store submission</p>
+        
+        <!-- App Icon Section -->
+        <div class="section">
+            <h2>📱 App Icon (1024 x 1024)</h2>
+            <p>Your app icon for the App Store. Export at 1024x1024 PNG without transparency.</p>
+            
+            <div class="icon-container">
+                <div>
+                    <div class="app-icon">
+                        <span class="sun">☀️</span>
+                        <span class="cloud">☁️</span>
+                        <span class="title">Weather Buddy</span>
+                    </div>
+                    <p class="icon-info">Preview (256px)</p>
+                </div>
+                
+                <div>
+                    <div class="app-icon icon-1024" id="icon-export">
+                        <span class="sun">☀️</span>
+                        <span class="cloud">☁️</span>
+                        <span class="title">Weather Buddy</span>
+                    </div>
+                    <p class="icon-info">App Store Size</p>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>How to Create Your App Icon:</h3>
+                <ol>
+                    <li>Use a design tool like <strong>Figma</strong>, <strong>Sketch</strong>, or <strong>Canva</strong></li>
+                    <li>Create a <code>1024 x 1024 px</code> canvas</li>
+                    <li>Use the gradient: <code>#4A90D9</code> → <code>#5BA8F7</code> → <code>#7BC8FF</code></li>
+                    <li>Add a sun emoji/icon and cloud as shown</li>
+                    <li>Export as <strong>PNG without alpha/transparency</strong></li>
+                    <li>Save as <code>icon-1024.png</code></li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Screenshots Section -->
+        <div class="section">
+            <h2>📸 App Store Screenshots</h2>
+            <p>6 screenshots showing key features. Required sizes: 6.7" (1290x2796), 6.5" (1242x2688), 5.5" (1242x2208)</p>
+            
+            <div class="screenshots-grid">
+                <!-- Screenshot 1: Main Weather -->
+                <div>
+                    <div class="phone-frame">
+                        <div class="phone-screen weather-main">
+                            <div class="phone-notch"></div>
+                            <div class="screen-content">
+                                <div class="location">📍 San Francisco, CA</div>
+                                <div class="temp">72°</div>
+                                <div class="condition">Sunny & Beautiful!</div>
+                                <div class="emoji">☀️</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="screenshot-label">1. Main Weather</p>
+                </div>
+                
+                <!-- Screenshot 2: Dress Tips -->
+                <div>
+                    <div class="phone-frame">
+                        <div class="phone-screen dress-screen">
+                            <div class="phone-notch"></div>
+                            <div class="screen-content">
+                                <div class="location">👗 What to Wear</div>
+                                <div class="dress-card">
+                                    <div style="font-size:24px;font-weight:600;color:#FF6B6B;">Perfect Day!</div>
+                                    <div class="outfit">👕 🩳 👟 🧢</div>
+                                    <div class="tip">Light clothes are perfect!<br>Don't forget sunscreen! ☀️</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="screenshot-label">2. Dress Tips</p>
+                </div>
+                
+                <!-- Screenshot 3: Weather Gadgets -->
+                <div>
+                    <div class="phone-frame">
+                        <div class="phone-screen gadgets-screen">
+                            <div class="phone-notch"></div>
+                            <div class="screen-content">
+                                <div class="location">🌡️ Weather Details</div>
+                                <div class="gadgets-grid">
+                                    <div class="gadget">
+                                        <div class="icon">💧</div>
+                                        <div class="value">45%</div>
+                                        <div class="label">Humidity</div>
+                                    </div>
+                                    <div class="gadget">
+                                        <div class="icon">💨</div>
+                                        <div class="value">8 mph</div>
+                                        <div class="label">Wind</div>
+                                    </div>
+                                    <div class="gadget">
+                                        <div class="icon">☀️</div>
+                                        <div class="value">6</div>
+                                        <div class="label">UV Index</div>
+                                    </div>
+                                    <div class="gadget">
+                                        <div class="icon">🌧️</div>
+                                        <div class="value">10%</div>
+                                        <div class="label">Rain Chance</div>
+                                    </div>
+                                    <div class="gadget">
+                                        <div class="icon">🌅</div>
+                                        <div class="value">6:45</div>
+                                        <div class="label">Sunrise</div>
+                                    </div>
+                                    <div class="gadget">
+                                        <div class="icon">🌇</div>
+                                        <div class="value">7:30</div>
+                                        <div class="label">Sunset</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="screenshot-label">3. Weather Gadgets</p>
+                </div>
+                
+                <!-- Screenshot 4: Week Forecast -->
+                <div>
+                    <div class="phone-frame">
+                        <div class="phone-screen week-screen">
+                            <div class="phone-notch"></div>
+                            <div class="screen-content">
+                                <div class="location">📅 This Week</div>
+                                <div style="margin-top:15px;">
+                                    <div class="day-row">
+                                        <span class="day">Today</span>
+                                        <span class="weather-icon">☀️</span>
+                                        <span class="temps">68° / 75°</span>
+                                    </div>
+                                    <div class="day-row">
+                                        <span class="day">Tuesday</span>
+                                        <span class="weather-icon">⛅</span>
+                                        <span class="temps">65° / 73°</span>
+                                    </div>
+                                    <div class="day-row">
+                                        <span class="day">Wednesday</span>
+                                        <span class="weather-icon">🌧️</span>
+                                        <span class="temps">60° / 68°</span>
+                                    </div>
+                                    <div class="day-row">
+                                        <span class="day">Thursday</span>
+                                        <span class="weather-icon">⛈️</span>
+                                        <span class="temps">58° / 65°</span>
+                                    </div>
+                                    <div class="day-row">
+                                        <span class="day">Friday</span>
+                                        <span class="weather-icon">☀️</span>
+                                        <span class="temps">62° / 72°</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="screenshot-label">4. Week Forecast</p>
+                </div>
+                
+                <!-- Screenshot 5: Kid Mode -->
+                <div>
+                    <div class="phone-frame">
+                        <div class="phone-screen kid-screen">
+                            <div class="phone-notch"></div>
+                            <div class="screen-content" style="text-align:center;">
+                                <span class="kid-mode-badge">🧸 KID MODE</span>
+                                <div class="big-emoji">🌤️</div>
+                                <div class="simple-info">It's Warm!</div>
+                                <div style="font-size:48px;margin-top:10px;">72°</div>
+                                <div style="margin-top:20px;font-size:16px;color:#666;">
+                                    Perfect day to play outside! 🎈
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="screenshot-label">5. Kid Mode</p>
+                </div>
+                
+                <!-- Screenshot 6: Alerts -->
+                <div>
+                    <div class="phone-frame">
+                        <div class="phone-screen alerts-screen">
+                            <div class="phone-notch"></div>
+                            <div class="screen-content">
+                                <div class="location">🔔 Weather Alerts</div>
+                                <div class="alert-item">
+                                    <span class="icon">🌧️</span>
+                                    <div class="text">
+                                        <div class="title">Rain Alert</div>
+                                        <div class="desc">Notify when rain is coming</div>
+                                    </div>
+                                    <div class="toggle"></div>
+                                </div>
+                                <div class="alert-item">
+                                    <span class="icon">🥶</span>
+                                    <div class="text">
+                                        <div class="title">Cold Weather</div>
+                                        <div class="desc">Alert below 40°F</div>
+                                    </div>
+                                    <div class="toggle"></div>
+                                </div>
+                                <div class="alert-item">
+                                    <span class="icon">🥵</span>
+                                    <div class="text">
+                                        <div class="title">Hot Weather</div>
+                                        <div class="desc">Alert above 90°F</div>
+                                    </div>
+                                    <div class="toggle"></div>
+                                </div>
+                                <div class="alert-item">
+                                    <span class="icon">☀️</span>
+                                    <div class="text">
+                                        <div class="title">High UV</div>
+                                        <div class="desc">Sun protection reminder</div>
+                                    </div>
+                                    <div class="toggle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="screenshot-label">6. Weather Alerts</p>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>How to Create Screenshots:</h3>
+                <ol>
+                    <li><strong>Best Method:</strong> Take real screenshots from the iOS Simulator or device</li>
+                    <li>Run app: <code>npx expo run:ios</code></li>
+                    <li>Press <code>Cmd + S</code> in Simulator to save screenshot</li>
+                    <li>Use <strong>Fastlane Frameit</strong> or <strong>AppMockUp.io</strong> to add device frames</li>
+                    <li>Add promotional text above each screenshot</li>
+                    <li>Export at required sizes: 1290x2796, 1242x2688, 1242x2208</li>
+                </ol>
+            </div>
+            
+            <div class="note">
+                <strong>💡 Pro Tip:</strong> Use <a href="https://appmockup.io" target="_blank">AppMockUp.io</a> (free) or 
+                <a href="https://mockuphone.com" target="_blank">MockUPhone</a> to easily add device frames and backgrounds 
+                to your screenshots. Upload your screenshots and download professional-looking store graphics!
+            </div>
+        </div>
+        
+        <!-- Quick Reference -->
+        <div class="section">
+            <h2>📋 Quick Reference - Required Graphics</h2>
+            
+            <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                <thead>
+                    <tr style="background:#f8f9fa;">
+                        <th style="padding:12px; text-align:left; border-bottom:2px solid #dee2e6;">Asset</th>
+                        <th style="padding:12px; text-align:left; border-bottom:2px solid #dee2e6;">Size</th>
+                        <th style="padding:12px; text-align:left; border-bottom:2px solid #dee2e6;">Format</th>
+                        <th style="padding:12px; text-align:left; border-bottom:2px solid #dee2e6;">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">App Icon</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">1024 x 1024</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">PNG (no alpha)</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">No rounded corners</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">iPhone 6.7" Screenshots</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">1290 x 2796</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">PNG or JPG</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">Required (2-10)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">iPhone 6.5" Screenshots</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">1242 x 2688</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">PNG or JPG</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">Required (2-10)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">iPhone 5.5" Screenshots</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">1242 x 2208</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">PNG or JPG</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">Required (2-10)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">iPad Pro 12.9" Screenshots</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">2048 x 2732</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">PNG or JPG</td>
+                        <td style="padding:12px; border-bottom:1px solid #dee2e6;">Required if iPad support</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;">App Preview Video</td>
+                        <td style="padding:12px;">Match screenshot sizes</td>
+                        <td style="padding:12px;">MP4/MOV (H.264)</td>
+                        <td style="padding:12px;">Optional, 15-30 seconds</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Color Palette -->
+        <div class="section">
+            <h2>🎨 Brand Colors</h2>
+            <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:15px;">
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; background:#4A90D9; border-radius:15px; margin-bottom:8px;"></div>
+                    <code>#4A90D9</code>
+                    <div style="font-size:12px; color:#888;">Primary Blue</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; background:#5BA8F7; border-radius:15px; margin-bottom:8px;"></div>
+                    <code>#5BA8F7</code>
+                    <div style="font-size:12px; color:#888;">Light Blue</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; background:#FFF2CC; border-radius:15px; margin-bottom:8px; border:1px solid #eee;"></div>
+                    <code>#FFF2CC</code>
+                    <div style="font-size:12px; color:#888;">Warm Yellow</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; background:#FF6B9D; border-radius:15px; margin-bottom:8px;"></div>
+                    <code>#FF6B9D</code>
+                    <div style="font-size:12px; color:#888;">Kid Mode Pink</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; background:#4CAF50; border-radius:15px; margin-bottom:8px;"></div>
+                    <code>#4CAF50</code>
+                    <div style="font-size:12px; color:#888;">Success Green</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

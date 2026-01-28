@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedBackground } from './AnimatedBackground';
+import { ToastContainer } from './Toast';
 import type { WeatherThemeKey } from '../types';
 import type { AppTheme } from '../theme/theme';
 
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export const ScreenShell = memo(({ themeKey, theme, header, children, scroll = true, contentPadding = 16 }: Props) => {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={[styles.root, { backgroundColor: theme.bgBottom }]}> 
       <AnimatedBackground themeKey={themeKey} theme={theme} />
@@ -23,17 +26,18 @@ export const ScreenShell = memo(({ themeKey, theme, header, children, scroll = t
       </SafeAreaView>
       {scroll ? (
         <ScrollView
-          contentContainerStyle={[styles.content, { padding: contentPadding }]}
+          contentContainerStyle={[styles.content, { padding: contentPadding, paddingBottom: 24 + insets.bottom }]}
           showsVerticalScrollIndicator={false}
           bounces
-          // @ts-expect-error web ScrollView props
+          // @ts-ignore web ScrollView props
           keyboardShouldPersistTaps={Platform.OS === 'web' ? 'always' : 'handled'}
         >
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.content, { padding: contentPadding }]}>{children}</View>
+        <View style={[styles.content, { padding: contentPadding, paddingBottom: 24 + insets.bottom }]}>{children}</View>
       )}
+      <ToastContainer theme={theme} />
     </View>
   );
 });

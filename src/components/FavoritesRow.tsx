@@ -45,7 +45,10 @@ export const FavoritesRow = memo(({ theme, cities, selectedCityId, onSelect, onR
           );
         })}
       </ScrollView>
-      <Text style={[styles.hint, { color: theme.textSoft }]}>Hold a city to remove</Text>
+      {/* Only show helper text when 2+ cities exist (removal requires at least 2) */}
+      {cities.length >= 2 && (
+        <Text style={[styles.hint, { color: theme.textSoft }]}>Hold a city to remove</Text>
+      )}
     </View>
   );
 });
