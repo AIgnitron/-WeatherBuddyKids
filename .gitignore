@@ -12,6 +12,9 @@ web-build/
 *.ipa
 *.app
 
+# Android build cache
+.cxx/
+
 # macOS
 .DS_Store
 *.pem
