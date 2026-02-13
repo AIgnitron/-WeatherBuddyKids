@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedBackground } from './AnimatedBackground';
-import { ToastContainer } from './Toast';
 import type { WeatherThemeKey } from '../types';
 import type { AppTheme } from '../theme/theme';
 
@@ -37,7 +36,6 @@ export const ScreenShell = memo(({ themeKey, theme, header, children, scroll = t
       ) : (
         <View style={[styles.content, { padding: contentPadding, paddingBottom: 24 + insets.bottom }]}>{children}</View>
       )}
-      <ToastContainer theme={theme} />
     </View>
   );
 });

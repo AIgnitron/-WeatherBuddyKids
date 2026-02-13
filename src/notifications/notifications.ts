@@ -107,7 +107,7 @@ export async function fireLocalNotification(opts: NotifyOptions): Promise<void> 
     content: {
       title: opts.title,
       body: opts.body,
-      sound: opts.soundEnabled ? 'default' : null
+      sound: opts.soundEnabled ? 'standard.wav' : null
     },
     trigger: null
   });
@@ -133,7 +133,7 @@ export async function scheduleDailyReminder(config: DailyReminderConfig): Promis
       content: {
         title: 'Weather Buddy time!',
         body: 'Tap me to see todays kid-friendly forecast!',
-        sound: config.soundEnabled ? 'default' : null,
+        sound: config.soundEnabled ? 'standard.wav' : null,
         ...(Platform.OS === 'android' && { channelId: 'daily-reminder' })
       },
       trigger: {

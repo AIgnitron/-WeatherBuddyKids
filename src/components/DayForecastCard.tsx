@@ -4,7 +4,7 @@ import type { DailyForecast, WeatherThemeKey, TemperatureUnit } from '../types';
 import type { AppTheme } from '../theme/theme';
 import { BubbleCard } from './BubbleCard';
 import { ExpandableBubble } from './ExpandableBubble';
-import { formatDayLong, formatKph, formatPct, formatTemp, formatTime } from '../utils/format';
+import { formatDayLong, formatKph, formatPct, formatSnowfall, formatTemp, formatTime } from '../utils/format';
 import { themeKeyFrom, weatherEmojiForTheme } from '../utils/weatherMap';
 
 type Props = {
@@ -32,12 +32,21 @@ export const DayForecastCard = memo(({ theme, day, index, expanded, onToggle, te
   const lines = useMemo(() => {
     const sunrise = day.sunriseISO ? formatTime(day.sunriseISO) : '--';
     const sunset = day.sunsetISO ? formatTime(day.sunsetISO) : '--';
-    return [
-      `Rain ${formatPct(day.rainChancePct)}`,
-      `Wind ${formatKph(day.windMaxKph)}`,
-      `Sun ${sunrise} / ${sunset}`
-    ];
-  }, [day.rainChancePct, day.windMaxKph, day.sunriseISO, day.sunsetISO]);
+    const items: string[] = [];
+
+    if (dayThemeKey !== 'snow' && typeof day.rainChancePct === 'number' && day.rainChancePct > 0) {
+      items.push(`Rain ${formatPct(day.rainChancePct)}`);
+    }
+
+    if (dayThemeKey === 'snow' || (typeof day.snowfallCmSum === 'number' && day.snowfallCmSum > 0)) {
+      items.push(`Snow ${formatSnowfall(day.snowfallCmSum)}`);
+    }
+
+    items.push(`Wind ${formatKph(day.windMaxKph)}`);
+    items.push(`Sun ${sunrise} / ${sunset}`);
+
+    return items;
+  }, [day.rainChancePct, day.snowfallCmSum, day.windMaxKph, day.sunriseISO, day.sunsetISO]);
 
   return (
     <BubbleCard

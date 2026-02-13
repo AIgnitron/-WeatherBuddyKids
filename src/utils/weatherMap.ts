@@ -35,17 +35,24 @@ export const shortLabelForTheme = (k: WeatherThemeKey) => {
 };
 
 const isSnowCode = (code: number) => {
+  // Snow fall (71-77), snow showers (85-86), freezing drizzle (56-57), freezing rain (66-67)
   return (
     (code >= 71 && code <= 77) ||
     code === 85 ||
-    code === 86
+    code === 86 ||
+    code === 56 ||
+    code === 57 ||
+    code === 66 ||
+    code === 67
   );
 };
 
 const isRainCode = (code: number) => {
-  // drizzle, rain, showers, thunderstorm
+  // drizzle (51-55), rain (61-65), rain showers (80-82), thunderstorm (95, 96, 99)
+  // Excludes freezing drizzle (56-57) and freezing rain (66-67) which are snow
   return (
-    (code >= 51 && code <= 67) ||
+    (code >= 51 && code <= 55) ||
+    (code >= 61 && code <= 65) ||
     (code >= 80 && code <= 82) ||
     code === 95 ||
     code === 96 ||

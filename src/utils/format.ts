@@ -29,12 +29,17 @@ export const formatTime = (iso: string) => {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 };
 
+const dateFromIsoDay = (isoDate: string) => {
+  // Use midday local time to avoid timezone shifting for date-only strings.
+  return new Date(`${isoDate}T12:00:00`);
+};
+
 export const formatDayShort = (isoDate: string) => {
-  const d = new Date(isoDate);
+  const d = dateFromIsoDay(isoDate);
   return d.toLocaleDateString(undefined, { weekday: 'short' });
 };
 
 export const formatDayLong = (isoDate: string) => {
-  const d = new Date(isoDate);
+  const d = dateFromIsoDay(isoDate);
   return d.toLocaleDateString(undefined, { weekday: 'long' });
 };

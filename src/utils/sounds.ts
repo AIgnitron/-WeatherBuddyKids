@@ -1,13 +1,15 @@
 import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
 
-// Sound URLs - using free sound effects
+// Standard sound - using local asset
+const STANDARD_SOUND = require('../../assets/sounds/standard.wav');
+
 const SOUNDS = {
-  tap: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3', // soft pop
-  success: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', // success chime
-  refresh: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3', // whoosh
-  toggle: 'https://assets.mixkit.co/active_storage/sfx/2205/2205-preview.mp3', // click
-  error: 'https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3', // soft error
+  tap: STANDARD_SOUND,
+  success: STANDARD_SOUND,
+  refresh: STANDARD_SOUND,
+  toggle: STANDARD_SOUND,
+  error: STANDARD_SOUND,
 };
 
 let soundEnabled = true;
@@ -49,7 +51,7 @@ async function loadSound(key: keyof typeof SOUNDS): Promise<Audio.Sound | null> 
     }
     
     const { sound } = await Audio.Sound.createAsync(
-      { uri: SOUNDS[key] },
+      SOUNDS[key],
       { shouldPlay: false, volume: 0.5 }
     );
     soundCache[key] = sound;

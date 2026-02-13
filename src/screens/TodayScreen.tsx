@@ -13,6 +13,7 @@ import { GadgetsGrid } from '../components/GadgetsGrid';
 import { DressTipCard } from '../components/DressTipCard';
 import { formatKph, formatPct, formatTemp, formatTime, formatSnowfall } from '../utils/format';
 import { getDressTip } from '../utils/dressTip';
+import { themeKeyFrom } from '../utils/weatherMap';
 
 export function TodayScreen() {
   const forecast = useWeatherStore((s) => s.forecast);
@@ -44,6 +45,13 @@ export function TodayScreen() {
     const rainNow = typeof forecast.current.rainChancePctNow === 'number'
       ? forecast.current.rainChancePctNow
       : today.rainChancePct;
+    const currentThemeKey = themeKeyFrom(
+      forecast.current.weatherCode,
+      forecast.current.isDay,
+      forecast.current.windKph
+    );
+    const isSnowNow = currentThemeKey === 'snow';
+    const showRain = typeof rainNow === 'number' && rainNow > 0 && !isSnowNow;
 
     const uvNow = typeof forecast.current.uvNow === 'number' ? forecast.current.uvNow : today.uvMax;
 
@@ -54,26 +62,30 @@ export function TodayScreen() {
     const snowNow = typeof forecast.current.snowfallCm === 'number' && forecast.current.snowfallCm > 0
       ? forecast.current.snowfallCm
       : today.snowfallCmSum;
+    const showSnow = typeof snowNow === 'number' && snowNow > 0 || isSnowNow;
 
     const all = [
       { key: 'temp', emoji: '🌡️', label: 'Temp', value: formatTemp(forecast.current.temperatureC, temperatureUnit) },
       { key: 'feels', emoji: '🙂', label: 'Feels', value: formatTemp(forecast.current.feelsLikeC, temperatureUnit) },
       { key: 'wind', emoji: '💨', label: 'Wind', value: formatKph(forecast.current.windKph) },
-      { key: 'rain', emoji: '🌧️', label: 'Rain', value: formatPct(rainNow) },
+      ...(showRain ? [{ key: 'rain', emoji: '🌧️', label: 'Rain', value: formatPct(rainNow) }] : []),
       { key: 'uv', emoji: '🧴', label: 'UV', value: typeof uvNow === 'number' ? String(Math.round(uvNow)) : '--' },
       { key: 'hum', emoji: '💧', label: 'Humid', value: formatPct(forecast.current.humidityPct) },
-      { key: 'snow', emoji: '❄️', label: 'Snow', value: formatSnowfall(snowNow), sub: snowNow > 0 ? 'today' : undefined },
+      ...(showSnow ? [{ key: 'snow', emoji: '❄️', label: 'Snow', value: formatSnowfall(snowNow), sub: 'today' }] : []),
       // Sun and High both have 'sub' text, placing them together ensures same row height
       { key: 'sun', emoji: '🌞', label: 'Sunrise', value: `${sunrise}`, sub: `sunset ${sunset}` },
       { key: 'hi', emoji: '📈', label: 'High', value: formatTemp(today.tempMaxC, temperatureUnit), sub: `low ${formatTemp(today.tempMinC, temperatureUnit)}` }
     ];
 
-    if (kidMode) {
-      // Show snow gadget in kid mode if there's snow, otherwise skip it
-      const kidKeys = snowNow > 0 ? ['temp', 'rain', 'wind', 'snow'] : ['temp', 'rain', 'wind'];
+    if (!kidMode) {
+      // Kid mode OFF: Show only essential gadgets
+      const kidKeys = ['temp', 'wind'];
+      if (showRain) kidKeys.push('rain');
+      if (showSnow) kidKeys.push('snow');
       return all.filter((g) => kidKeys.includes(g.key));
     }
 
+    // Kid mode ON: Show all gadgets
     return all;
   }, [forecast, today, kidMode, temperatureUnit]);
 
@@ -105,8 +117,8 @@ export function TodayScreen() {
 
       <View style={styles.kidRow}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.kidTitle, { color: theme.text }]}>{kidMode ? 'Kid Mode' : 'All Gadgets'}</Text>
-          <Text style={[styles.kidSub, { color: theme.textSoft }]}>{kidMode ? 'Only the big stuff' : 'Show everything'}</Text>
+          <Text style={[styles.kidTitle, { color: theme.text }]}>All Gadgets</Text>
+          <Text style={[styles.kidSub, { color: theme.textSoft }]}>{kidMode ? 'Show everything' : 'Only the big stuff'}</Text>
         </View>
         <TogglePill
           theme={theme}
@@ -114,7 +126,7 @@ export function TodayScreen() {
           onChange={(v) => setKidMode(v).catch(() => {})}
           labelOn="ON"
           labelOff="OFF"
-          accessibilityLabel="Kid mode toggle"
+          accessibilityLabel="All gadgets toggle"
         />
       </View>
 
